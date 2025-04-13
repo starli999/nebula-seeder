@@ -1,0 +1,29 @@
+name: Permanent Seeder
+
+on:
+  push:
+    paths:
+      - 'seeds/seeds.json'
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install WebTorrent CLI
+        run: npm install -g webtorrent-cli
+
+      - name: Start seeding
+        run: |
+          jq -r '.[].magnetURI' seeds/seeds.json | while read magnet; do
+            echo "🌱 Seeding: $magnet"
+            nohup webtorrent seed "$magnet" &
+          done
+          sleep 600
